@@ -1,11 +1,12 @@
 from flask import Flask, render_template_string, request, redirect
+import os
 
 app = Flask(__name__)
 
-# Lista para armazenar os agendamentos
+# Lista em memória para armazenar agendamentos
 agendamentos = []
 
-# HTML com visual de app (Bootstrap)
+# HTML com Bootstrap e PWA básico
 html = '''
 <!DOCTYPE html>
 <html>
@@ -13,12 +14,13 @@ html = '''
     <title>Agendamento</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0d6efd">
+    <link rel="manifest" href="/static/manifest.json">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
 <div class="container mt-5">
     <h2 class="mb-4 text-center">📅 Agendamento de Corte</h2>
-    
+
     <form method="post" class="card p-3 shadow">
         <div class="mb-3">
             <label class="form-label">Nome:</label>
@@ -52,6 +54,18 @@ html = '''
         {% endfor %}
     </ul>
 </div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/service-worker.js')
+      .then(function(reg) {
+        console.log('Service Worker registrado');
+      })
+      .catch(function(err) {
+        console.error('Erro ao registrar Service Worker:', err);
+      });
+  }
+</script>
 </body>
 </html>
 '''
@@ -68,5 +82,7 @@ def agendar():
         return redirect('/')
     return render_template_string(html, agendamentos=agendamentos)
 
+# Configuração final para Render: porta e host
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
